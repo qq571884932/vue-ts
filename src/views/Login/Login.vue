@@ -1,45 +1,86 @@
 <template>
     <div class="box">
         <div class="login">
-            <header>
-                ts+vue开发后台管理系统
-            </header>
-
             <LoginHeader>
-                <div slot="container">
+                <el-form ref="ruleForm" :rules="rules" :model="ruleForm" label-position="left" label-width="0"
+                         slot="container">
                     <div class="form">
                         <div class="title">账号密码登录</div>
-                        <div class="f-item">
-                            <input :placeholder="p_name" type="text">
-
-                            <input :placeholder="p_password" type="text">
-                        </div>
+                        <!--                            账号-->
+                        <el-form-item prop="username">
+                            <el-input type="text" v-model="ruleForm.username" placeholder="账号">
+                                <i slot="prefix" class="fa fa-user-o"></i>
+                            </el-input>
+                        </el-form-item>
+                        <!--                            密码-->
+                        <el-form-item prop="password">
+                            <el-input type="text" v-model="ruleForm.password" placeholder="密码">
+                                <i slot="prefix" class="fa fa-lock"></i>
+                            </el-input>
+                        </el-form-item>
+                        <!--                            登录按钮-->
+                        <el-form-item>
+                            <el-button @click.native.prevent="handleSubmit" type="primary"
+                                       style="width: 100%">登录
+                            </el-button>
+                        </el-form-item>
+                        <!--                            其他功能(7天登录，和忘记密码)-->
+                        <el-form-item>
+                            <el-checkbox style="float: left" v-model="ruleForm.autoLogin">七天自动登录</el-checkbox>
+                            <el-button @click="$router.push('/password')" class="forget" type="text">忘记密码</el-button>
+                        </el-form-item>
                     </div>
-                    <button id="login">登录</button>
-                </div>
+                </el-form>
             </LoginHeader>
         </div>
     </div>
 </template>
 
-
 <script lang="ts">
-    import {Component, Vue} from "vue-property-decorator";
+    import {Component, Vue, Provide} from "vue-property-decorator";
     import LoginHeader from "./LoginHeader.vue";
-
     @Component({ //修饰器 修饰Login类
         components: {
             LoginHeader
-        },
-        data(){
-            return{
-                p_name:"账号",
-                p_password:"密码"
-            }
         }
     })
     export default class Login extends Vue { // 继承Vue 并导出 Login类
+        @Provide()
+        ruleForm: {
+            username: string;
+            password: string;
+            autoLogin: boolean;
+        } = {
+            username: "",
+            password: "",
+            autoLogin: true
+        };
 
+        @Provide()
+        rules = {
+            username: [
+                {required: true, message: '请输入账号', trigger: 'blur'},
+                {min: 3, max: 10, message: "最少3个字符，最长10个字符"}
+            ],
+            password: [{required: true, message: '请输入密码', trigger: 'blur'},
+                {min: 3, max: 10, message: "最少3个字符，最长10个字符"}],
+        };
+
+        handleSubmit(): void {
+            // 将 this.$refs["ruleForm"] 转为任意类型
+            (this.$refs["ruleForm"] as any).validate( (vaild:boolean)=>{
+                if(vaild){
+
+                }else{
+                    this.$message({
+                        message:"请输入正确内容",
+                        type:"error",
+                        center:true,
+                        offset:100
+                    });
+                }
+            })
+        }
     }
 
 </script>
@@ -48,91 +89,38 @@
     .box {
         width: 100%;
         height: 100%;
-        background: url("../../assets/LOLbg.jpg") no-repeat;
         overflow: hidden;
+        background: #fff;
+
         .login {
             width: 100%;
             height: 100%;
-            background-color: rgba(0, 0, 0, .5);
-            header {
-                width: 90%;
-                min-width: 640px;
-                height: 100px;
-                line-height: 100px;
-                margin: 0 auto;
-                text-align: center;
-                font-size: 50px;
-                color: rgba(255, 255, 255, .8);
-                font-weight: bold;
-            }
         }
+
         /*  表单部分  */
-        .form{
+        .form {
             width: 500px;
             text-align: center;
             margin: 100px auto 0;
+            box-shadow: 0 0 10px 5px rgba(0, 0, 0, .2);
+            padding: 20px;
 
-            .title{
-                height: 30px;
+            .title {
+                height: 50px;
                 line-height: 30px;
                 text-align: center;
                 font-size: 30px;
-                color: #fff;
+                color: #000;
             }
-            .f-item{
-                input{
-                    width: 400px;
-                    height: 50px;
-                    border-radius: 50px;
-                    background-color: rgba(255,255,255,.5);
-                    outline: none;
-                    border: none;
-                    color: rgba(255,255,255,.8);
-                    font-size: 24px;
-                    padding: 0 20px;
-                    margin-top: 20px;
-                }
+        }
+    }
 
-            }
+    i {
+        font-size: 14px;
+        margin-left: 8px;
+    }
 
-        }
-        #login{
-            position: relative;
-            z-index: 2;
-            display: block;
-            overflow: hidden;
-            width: 400px;
-            height: 50px;
-            border: none;
-            outline: none;
-            margin: 20px auto 0;
-            background-color: rgba(255, 255, 255, 0.50);
-            color: rgba(0, 0, 0, 0.50);
-            font-size: 20px;
-            transition: all .3s;
-            cursor: pointer;
-        }
-        #login:after{
-            content: '';
-            position: absolute;
-            z-index: -1;
-            display: block;
-            top: -68%;
-            left: 50%;
-            width: 0;
-            height: 120px;
-            background-color: rgba(255, 255, 255, 0.68);
-            transform: rotate(10deg);
-            transition: all .3s;
-        }
-        #login:hover{
-            -webkit-border-radius: 50px;
-            -moz-border-radius: 50px;
-            border-radius: 50px;
-        }
-        #login:hover:after{
-            width: 500px;
-            margin-left: -250px;
-        }
+    .forget {
+        float: right;
     }
 </style>
