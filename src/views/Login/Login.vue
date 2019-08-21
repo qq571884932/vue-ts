@@ -13,14 +13,14 @@
                             </el-input>
                         </el-form-item>
                         <!--                            密码-->
-                        <el-form-item prop="password">
-                            <el-input type="text" v-model="ruleForm.password" placeholder="密码">
+                        <el-form-item prop="pwd">
+                            <el-input type="password" v-model="ruleForm.pwd" placeholder="密码">
                                 <i slot="prefix" class="fa fa-lock"></i>
                             </el-input>
                         </el-form-item>
                         <!--                            登录按钮-->
                         <el-form-item>
-                            <el-button @click.native.prevent="handleSubmit" type="primary"
+                            <el-button :loading="isLoading" @click.native.prevent="handleSubmit" type="primary"
                                        style="width: 100%">登录
                             </el-button>
                         </el-form-item>
@@ -42,19 +42,26 @@
     @Component({ //修饰器 修饰Login类
         components: {
             LoginHeader
+        },
+        data(){
+            return {
+
+            }
         }
     })
     export default class Login extends Vue { // 继承Vue 并导出 Login类
         @Provide()
         ruleForm: {
             username: string;
-            password: string;
+            pwd: string;
             autoLogin: boolean;
         } = {
             username: "",
-            password: "",
+            pwd: "",
             autoLogin: true
         };
+
+        @Provide() isLoading:boolean = false;
 
         @Provide()
         rules = {
@@ -68,9 +75,35 @@
 
         handleSubmit(): void {
             // 将 this.$refs["ruleForm"] 转为任意类型
+            const that = this;
             (this.$refs["ruleForm"] as any).validate( (vaild:boolean)=>{
                 if(vaild){
+                    this.isLoading = true;
 
+                    (this as any).$axios.post("/api/users/login",this.ruleForm).then((e:any)=>{
+                        console.log(e)
+                        this.isLoading = false;
+                        if(e.data.state === "suc"){
+                            //登录成功 存储token
+                            localStorage.setItem("tsToken",e.data.token);
+                        }else{
+                            //登录失败
+                            this.$message({
+                                message:e.data.msg,
+                                type:"error",
+                                center:true,
+                                offset:100
+                            })
+                        }
+                    }).catch( ()=>{
+                        this.isLoading = false;
+                        this.$message({
+                            message:"服务器异常！",
+                            type:"error",
+                            center:true,
+                            offset:100
+                        })
+                    })
                 }else{
                     this.$message({
                         message:"请输入正确内容",

@@ -5,7 +5,7 @@ import Login from '@/views/Login/Login.vue';
 
 Vue.use(Router);
 
-export default new Router({
+const router = new Router({
     mode: 'history',
     base: process.env.BASE_URL,
     routes: [
@@ -30,4 +30,19 @@ export default new Router({
             component: () => import("@/views/Login/LoginHeader.vue")
         }
     ]
-})
+});
+
+// 路由拦截
+router.beforeEach((to: any, from: any, next: any) => {
+    console.log(to, from, next);
+    const isLogin = !localStorage.tsToken; //有token 表示已登录
+    console.log(isLogin);
+    if (isLogin) {
+        next();
+    } else {
+        router.push("/login")
+    }
+});
+
+
+export default router;

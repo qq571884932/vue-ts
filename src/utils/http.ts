@@ -1,12 +1,15 @@
 import axios,{AxiosResponse,AxiosRequestConfig} from "axios";
 import {Message} from "element-ui";
-
+import router from "@/router";
 const service = axios.create({
     timeout:10000 //超时请求
 });
-
+// service.defaults.baseURL = "https://vuets-api.herokuapp.com/api/";
 // 请求拦截
 service.interceptors.request.use((config:AxiosRequestConfig) =>{
+    if(localStorage.getItem("tsToken")){
+        config.headers.Authorization = localStorage.tsToken;
+    }
     return config
 },(err:any)=>{
     return  Promise.reject(err);
@@ -20,6 +23,8 @@ service.interceptors.response.use((response:AxiosResponse) =>{
     if(err && err.response.status){
         switch (err.response.status) {
             case 401:
+                localStorage.removeItem("tsToken");
+                router.push("/login");
                 errMsg = "登录失效，请重新登录";
                 break;
             case 403:
